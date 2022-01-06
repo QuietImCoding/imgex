@@ -1,5 +1,5 @@
 function randomInt(max) {
-  return Math.floor(Math.random() * max);
+    return Math.floor(Math.random() * max);
 }
 
 var letter2color = function(letter) {
@@ -7,11 +7,14 @@ var letter2color = function(letter) {
 }
 
 var expandRegex = function(regex) {
+    // gstack stores groups for maybe eventual backreference
     var gstack = [];
+    // opstack stores open symbols that need to be closed
     var opstack = [];
+    // tstack stores the actual text, should optimally collapse to one element
     var tstack = [];
-    var outtxt = '';
     var index = 0;
+    // cchar is current character 
     var cchar = regex[index];
 
     while (index <= regex.length) {
@@ -19,13 +22,13 @@ var expandRegex = function(regex) {
 	    console.log("CCHAR IN LIST", cchar);
 	    opstack.push(cchar);
 	    tstack.push('')
-	    //if (tstack.length == 0) tstack.push('');
 	} else if (cchar == '}') {
 	    console.log("CCHAR CLOSING }", history);
 	    var repeats = tstack.pop().split(',');
 	    var torepeat = tstack.pop()
-	    if (gstack.length == 0) var repeated = torepeat.slice(-1);
-	    else var repeated = torepeat;
+	    if (gstack.length == 0) {
+		var repeated = torepeat.slice(-1);
+	    } else var repeated = torepeat;
 	    if (repeats.length > 1) {
 		repeats = randomInt(parseInt(repeats[1]) - parseInt(repeats[0])) +
 		    randomInt(parseInt(repeats[1])); 
@@ -34,6 +37,13 @@ var expandRegex = function(regex) {
 		tstack.push(torepeat + repeated.repeat(parseInt(repeats-1)));
 	    }
 	    if (opstack.pop() != '{') console.log("expected '{'");
+	} else if (cchar == '*' || cchar == '+') {
+	    var repeats = cchar == '+' ? randomInt(100) : randomInt(100) + 1;
+	    var torepeat = tstack.pop()
+	    if (gstack.length == 0) {
+		var repeated = torepeat.slice(-1);
+	    } else var repeated = torepeat;
+	    tstack.push(torepeat + repeated.repeat(parseInt(repeats-1)));
 	} else if (cchar == ')') {
 	    console.log("CCHAR CLOSING )");
 	    if (opstack.pop() != '(') console.log("expected '('");
@@ -55,6 +65,7 @@ var expandRegex = function(regex) {
 	index+=1;
 	cchar = regex[index];
     }
+    // really there should only be one element in tstack, but code no work good 
     return tstack.join('');
 } 
 
