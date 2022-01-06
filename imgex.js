@@ -3,9 +3,10 @@ function randomInt(max) {
 }
 
 var letter2color = function(letter) {
-    return('rgb(');
+    return [ (letter.codePointAt(0) * 13) % 255, (letter.codePointAt(0) * 17) % 255, (letter.codePointAt(0) * 19) % 255 ] 
 }
 
+// leaving this function in for the memories :') 
 var expandRegex = function(regex) {
     // gstack stores groups for maybe eventual backreference
     var gstack = [];
@@ -70,28 +71,46 @@ var expandRegex = function(regex) {
 } 
 
 var imgFromRegex = function(ctx, canvasSize, regex) {
-
     const imgData = ctx.createImageData(canvasSize[0], canvasSize[1]);
     const data = imgData.data;
-    var expanded = expandRegex(regex);
+    var expanded = new RandExp(regex).gen();
     for (var i = 0; i < expanded.length; i++) {
 	if ( i * 4 < data.length ) {
-	    var pix = parseInt(expanded[i]) * 28;
-	    data[i*4] = pix;
-	    data[i*4 + 1] = 255 - pix;
-	    data[i*4 + 2] = pix / 2;
+	    var pix = letter2color(expanded[i]);
+	    data[i*4] = pix[0];
+	    data[i*4 + 1] = pix[1];
+	    data[i*4 + 2] = pix[2];
 	    data[i*4 + 3] = 255;
 	}
     }
     return(imgData);
 }
 
-var canvas = document.getElementById('img');
-const ctx = canvas.getContext('2d');
-var genBtn = document.getElementById("gen");
-genBtn.onclick = e => {
-    var regex  = document.getElementById('imgex').value;
-    var dat = imgFromRegex(ctx, [canvas.width, canvas.height], regex);
-    ctx.putImageData(dat, 0, 0);
-};
+import('./randexp.min.js').then( (test) => { 
+    var canvas = document.getElementById('img');
+    const ctx = canvas.getContext('2d');
+    var genBtn = document.getElementById("gen");
+    var downBtn = document.getElementById("down");
+    downBtn.onclick = e => {
+	var link = document.createElement('a');
+	link.download = 'imgex.png';
+	link.href = canvas.toDataURL();
+	link.click();
+    };
+    genBtn.onclick = e => {
+	canvas.width = 128;
+	canvas.height = 128;
+	var regex  = document.getElementById('imgex').value;
+	var dat = imgFromRegex(ctx, [128, 128], regex);
+	ctx.putImageData(dat, 0, 0);
+	var imgdata = canvas.toDataURL();
+	var imel = new Image();
+	imel.src = imgdata;
+	imel.onload = function() {
+	    canvas.width = 512;
+	    canvas.height = 512;
+	    ctx.drawImage(imel, 0, 0, 512, 512); 
+	};
+    };
+});
 
