@@ -38,28 +38,24 @@ for i in pixels:
 #print(str_out)
 compressed_str = ''
 last_char = ''
-last_ctr = 1
 ctr = 1
 setbuf = ''
 for a in str_out:
     if a == last_char:
+        if setbuf != '':
+            if len(setbuf) > 3:
+                compressed_str += f"[{''.join(set(setbuf))}]{{{len(setbuf)}}}"
+                setbuf = ''
+            else:
+                compressed_str += setbuf
+                setbuf = ''
         ctr += 1
-        if setbuf != '' and len(setbuf) > 5:
-            compressed_str += f"[{''.join(set(setbuf))}]{{{len(setbuf)}}}"
-            setbuf = ''
-        else:
-            compressed_str += setbuf
-            setbuf = ''
     else:
         if ctr > 1:
             compressed_str += f'{last_char}{{{ctr}}}' if ctr > 3 else last_char * ctr
         else:
-            if last_ctr == 1:
-                setbuf += last_char
-            else:
-                compressed_str += last_char
+            setbuf += last_char
         last_char = a
-        last_ctr = ctr
         ctr = 1
 compressed_str += f'{last_char}{{{ctr}}}' if ctr > 1 else last_char
 
